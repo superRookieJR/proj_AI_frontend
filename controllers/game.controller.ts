@@ -26,9 +26,11 @@ export class GameController{
     gameResult(player1Move: Move, player2Move: Move) {
         const result = this.determineWinner(player1Move, player2Move);
         if (result === ResultEnum.WIN){
-            this.player1Score++
-        }else if(result === ResultEnum.LOSE){
             this.player2Score++
+        }else if(result === ResultEnum.LOSE){
+            this.player1Score++
+            this.hearts--
+            console.log(this.hearts)
         };
     }
 
@@ -44,7 +46,7 @@ export class GameController{
         return moves[randomIndex];
     }
 
-    determineWinner(playerMove: Move, botMove: Move): Result {
+    determineWinner(botMove: Move, playerMove: Move): Result {
         if (playerMove === botMove){
             console.log("DRAW")
             return ResultEnum.DRAW

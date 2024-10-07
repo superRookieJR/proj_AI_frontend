@@ -3,11 +3,35 @@
 import CButton from "@/components/CButton";
 import CIconButton from "@/components/CIconButton";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { io, Socket } from 'socket.io-client';
 
 export default function Home() {
   const route = useRouter();
   const [onlineMode, setOnlineMode] = useState(0)
+
+  const [socket, setSocket] = useState<Socket>();
+
+  function useSocket(serverPath: string){
+      const [socket, setSocket] = useState<Socket>();
+
+      useEffect(() => {
+      // Connect to the Socket.IO server
+          const socketIo = io(serverPath);
+
+          setSocket(socketIo);
+
+          // Cleanup on unmount
+          return () => {
+              if (socketIo) socketIo.disconnect();
+          };
+      }, [serverPath]);
+
+      return socket;
+  };
+
+  const socketBackend = useSocket('http://192.168.0.102:5000');
+
 
   return (
     <div>
@@ -24,7 +48,7 @@ export default function Home() {
         <CButton text="endless" className=" bg-cnavy mb-4 w-3/12 py-6" onClick={(e) => route.push('/game/endless')} />
         <div className="relative w-3/12">
           <img src="/images/icon/clown.png" className="absolute z-20 -left-12 -top-14 w-4/12"/>
-          <CButton text="leaderboard" className="absolute z-10 bg-cblue w-full" onClick={(e) => route.push('/game/online/test')} />
+          <CButton text="leaderboard" className="absolute z-10 bg-cblue w-full" onClick={(e) => route.push('/leaderboard')} />
         </div>
       </div>
       <div className=" absolute top-5 right-5">
@@ -43,7 +67,9 @@ export default function Home() {
             </div>
             <div className="divider divider-horizontal">OR</div>
             <div className="card grid w-1/2 flex-grow place-items-center">
-              <CButton text="create room" className=" bg-cnavy w-full text-base" onClick={(e) => route.push('/game/endless')} />
+              <CButton text="create room" className=" bg-cnavy w-full text-base" onClick={(e) => {
+                socketBackend?.emit("onCreateRoom", )
+              }} />
             </div>
           </div>
         </div>

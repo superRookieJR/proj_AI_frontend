@@ -1,4 +1,3 @@
-import { ThemeColors } from "@nextui-org/react"
 import { MouseEventHandler } from "react"
 
 export default function CButton({
