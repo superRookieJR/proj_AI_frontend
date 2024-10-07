@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* :root {
   --background: #ffffff;
   --foreground: #171717;
   --font: #000000;
@@ -14,12 +14,12 @@
     --foreground: #ededed;
     --font: #000000;
   }
-}
+} */
 
 body {
   color: var(--font);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-luckiest-guy);
   width: 100%;
   height: 100vh;
 }
@@ -53,4 +53,25 @@ body {
 
 tr{
   height: 40px;
+}
+
+.custom_full_height{
+  height: 100%;
+}
+
+.custom_round_bar{
+  clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%);
+}
+
+.custom_rounded_circle{
+  aspect-ratio: 1;
+}
+
+.custom_profile{
+  object-fit: cover;
+}
+
+.custom_profile_large{
+  width: 10%;
+  aspect-ratio: 1;
 }
