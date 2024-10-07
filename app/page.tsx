@@ -28,7 +28,7 @@ export default function Home() {
         </div>
       </div>
       <div className=" absolute top-5 right-5">
-        <CIconButton src="/icons/network.png" className="w-5/6" onClick={(e) => document.getElementById('my_modal_1')!.showModal()} />
+        <CIconButton src="/icons/network.png" className="w-5/6" onClick={(e) => (document.getElementById('my_modal_1')  as HTMLDialogElement)!.showModal()} />
       </div>
       <dialog id="my_modal_1" className="modal">
         <div className="modal-box">
