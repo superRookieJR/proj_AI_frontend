@@ -9,10 +9,15 @@ import { MoveEnum } from "@/models/move.enum";
 import { io, Socket } from 'socket.io-client';
 import CButton from "./CButton";
 import { useRouter } from "next/navigation";
+import axios from 'axios';
 
 type Mode = ModeEnum.NORMAL | ModeEnum.ENDLESS | ModeEnum.ONLINE;
 
-export default function CGameScreen({ mode }: { mode: Mode }) {
+export default function CGameScreen({
+    mode,
+} : { 
+    mode: Mode,
+}) {
     const route = useRouter();
     const videoRef = useRef<HTMLVideoElement>(null);
     const cameraController = new CameraController();
@@ -25,6 +30,8 @@ export default function CGameScreen({ mode }: { mode: Mode }) {
     const [userMove, setUserMove] = useState<MoveEnum | null>(null); // Track user's move
     const [botMove, setBotMove] = useState<MoveEnum | null>(null);
     const [endGmae, setEndGame] = useState(false)
+    const [isWaiting, setIsWaiting] = useState(true); // New state for waiting screen
+    const [userName, setUsername] = useState('')
 
     function useSocket(serverPath: string){
         const [socket, setSocket] = useState<Socket>();
@@ -44,8 +51,7 @@ export default function CGameScreen({ mode }: { mode: Mode }) {
         return socket;
     };
 
-    const socketModel = useSocket('http://192.168.0.103:5000');
-    const socketBackend = useSocket('http://192.168.0.103:5000');
+    const socketModel = useSocket('http://10.107.5.42:5000');
 
     useEffect(() => {
         const initializeCamera = async () => {
@@ -118,7 +124,7 @@ export default function CGameScreen({ mode }: { mode: Mode }) {
     }, [socketModel, videoRef]);
 
     useEffect(() => {
-        if (mode === ModeEnum.NORMAL ? currentRound < 5 : hearts != 0) {
+        if ((mode === ModeEnum.NORMAL || mode === ModeEnum.ONLINE) ? currentRound < 5 : hearts != 0) {
             if (countdown > 0) {
                 const timer = setTimeout(() => {
                     setCountdown(countdown - 1);
@@ -141,13 +147,12 @@ export default function CGameScreen({ mode }: { mode: Mode }) {
                 gameController.current.gameResult(player1Move, player2Move);
                 setScore(); // Update scores
                 setHearts(gameController.current.hearts); // Update hearts
-                setBotMove(null); // Update hearts
                 setCountdown(5); // Reset countdown
                 setCurrentRound(gameController.current.currentRound); // Update current round
                 setUserMove(null); // Reset user move for the next rousnd
                 setCurrentRound(currentRound + 1);
             }
-        }else if(mode == ModeEnum.NORMAL ? currentRound == 5 : hearts == 0){
+        }else if(mode == ModeEnum.NORMAL ? currentRound == 5 : hearts == 0)  {
             (document.getElementById('my_modal_1')  as HTMLDialogElement)!.showModal()
             setEndGame(true)
         }
@@ -173,6 +178,13 @@ export default function CGameScreen({ mode }: { mode: Mode }) {
         setPlayer2Score(gameController.current.player2Score);
     }
 
+   async function saveScore(){
+        await axios.post(mode == ModeEnum.NORMAL ? 'http://10.107.1.111:3001/score/normal' : 'http://10.107.1.111:3001/score/endless', {
+            username: userName,
+            score: gameController.current.player2Score,
+        })
+   };
+
     return (
         <div>
             <CGameBar 
@@ -187,13 +199,13 @@ export default function CGameScreen({ mode }: { mode: Mode }) {
                     <img src="/images/rabbit/rabbit_ready.png" style={{ width: '100%' }} />
                 }
                 {botMove === MoveEnum.SCRISSORS &&
-                    <img src="/images/rabbit/rabbit_scissors.png" style={{ width: '60%' }} />
+                    <img src="/images/rabbit/rabbit_scissors.png" style={{ width: '100%' }} />
                 }
                 {botMove === MoveEnum.ROCK &&
-                    <img src="/images/rabbit/rabbit_rock.png" style={{ width: '60%' }} />
+                    <img src="/images/rabbit/rabbit_rock.png" style={{ width: '100%' }} />
                 }
                 {botMove === MoveEnum.PAPER &&
-                    <img src="/images/rabbit/rabbit_normalFace_paper.png" style={{ width: '60%' }} />
+                    <img src="/images/rabbit/rabbit_normalFace_paper.png" style={{ width: '100%' }} />
                 }
             </div>
             <div className="absolute w-1/5 bottom-0 left-1/2 -translate-x-1/2">
@@ -225,6 +237,17 @@ export default function CGameScreen({ mode }: { mode: Mode }) {
                         <div className="card grid w-1/2 flex-grow place-items-center">
                             <CButton text="Exit" className=" bg-cred w-full text-base" onClick={(e) => route.push('/')} />
                         </div>
+                    </div>
+                    <div className="flex w-full mt-5">
+                    <div className="card grid w-1/2 flex-grow place-items-center">
+                        <input type="text" placeholder="username" onChange={(e) => setUsername(e.currentTarget.value)} className="input input-bordered input-md w-full mb-2" />    
+                        <div className="card grid w-1/2 flex-grow place-items-center mt-2">
+                            <CButton text="save" className=" bg-cnavy w-full text-base" onClick={(e) => {
+                                saveScore()
+                                route.push('/')
+                            }} />
+                        </div>
+                    </div>
                     </div>
                 </div>
             </dialog>

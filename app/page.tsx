@@ -9,28 +9,19 @@ import { io, Socket } from 'socket.io-client';
 export default function Home() {
   const route = useRouter();
   const [onlineMode, setOnlineMode] = useState(0)
+  const [roomID, setRoomID] = useState('')
 
-  const [socket, setSocket] = useState<Socket>();
+  function generateRoomNumber() {
+      let roomNumber = '';
+      const characters = '0123456789';
 
-  function useSocket(serverPath: string){
-      const [socket, setSocket] = useState<Socket>();
+      for (let i = 0; i < 6; i++) {
+          const randomIndex = Math.floor(Math.random() * characters.length);
+          roomNumber += characters[randomIndex];
+      }
 
-      useEffect(() => {
-      // Connect to the Socket.IO server
-          const socketIo = io(serverPath);
-
-          setSocket(socketIo);
-
-          // Cleanup on unmount
-          return () => {
-              if (socketIo) socketIo.disconnect();
-          };
-      }, [serverPath]);
-
-      return socket;
-  };
-
-  const socketBackend = useSocket('http://192.168.0.102:5000');
+      return roomNumber;
+  }
 
 
   return (
@@ -48,7 +39,7 @@ export default function Home() {
         <CButton text="endless" className=" bg-cnavy mb-4 w-3/12 py-6" onClick={(e) => route.push('/game/endless')} />
         <div className="relative w-3/12">
           <img src="/images/icon/clown.png" className="absolute z-20 -left-12 -top-14 w-4/12"/>
-          <CButton text="leaderboard" className="absolute z-10 bg-cblue w-full" onClick={(e) => route.push('/leaderboard')} />
+          <CButton text="leaderboard" className="absolute z-10 bg-cblue w-full text-2xl" onClick={(e) => route.push('/leaderboard')} />
         </div>
       </div>
       <div className=" absolute top-5 right-5">
@@ -62,13 +53,14 @@ export default function Home() {
           <h3 className="font-bold text-3xl">Online mode</h3>
           <div className="flex w-full">
             <div className="card grid w-1/2 flex-grow place-items-center">
-              <input type="number" placeholder="room id" className="input input-bordered input-md w-full mb-2" />
-              <CButton text="join" className=" bg-cgreen w-full text-base" onClick={(e) => route.push('/game/endless')} />
+              <input type="number" placeholder="room id" id="room_id" onChange={(e) => setRoomID(e.currentTarget.value)} className="input input-bordered input-md w-full mb-2" />
+              <CButton text="join" className=" bg-cgreen w-full text-base" onClick={(e) => route.push(`/game/online/${roomID}`)} />
             </div>
             <div className="divider divider-horizontal">OR</div>
             <div className="card grid w-1/2 flex-grow place-items-center">
               <CButton text="create room" className=" bg-cnavy w-full text-base" onClick={(e) => {
-                socketBackend?.emit("onCreateRoom", )
+                const newRoom = generateRoomNumber()
+                route.push(`/game/online/${newRoom}`)
               }} />
             </div>
           </div>

@@ -1,20 +1,36 @@
 "use client"
 
+import { ModeEnum } from "@/models/mode.enum";
 import ScoreInterface from "@/models/score.interface";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export default function Normal(){
-    const [tab, setTab] = useState<0 | 1 | 2>(0);
-    const [data, setData] = useState<ScoreInterface[]>([]);
+    const [tab, setTab] = useState<1 | 2>(1);
+    const [dataNormal, setNormalData] = useState<{username: string, score_normal: number}[]>([]);
+    const [dataEndless, setEndlessData] = useState<{username: string, score_endless: number}[]>([]);
+    // const [data, setData] = useState<ScoreInterface[]>([]);
     const [isLoading, setLoading] = useState(true);
     const route = useRouter();
 
     useEffect(() => {
-        fetch('https://proj-ai-backend.onrender.com/score/topscore')
+        fetch('http://10.107.1.111:3001/score/normal')
         .then((response) => response.json())
         .then((data) => {
-            setData(data.data);
+            setNormalData(data.data.normal)
+            setLoading(false)
+        })
+        .catch((error) => {
+            console.error('Error fetching data:', error);
+            setLoading(false)
+        });
+    }, []);
+
+    useEffect(() => {
+        fetch('http://10.107.1.111:3001/score/endless')
+        .then((response) => response.json())
+        .then((data) => {
+            setEndlessData(data.data.endless)
             setLoading(false)
         })
         .catch((error) => {
@@ -30,9 +46,12 @@ export default function Normal(){
                 {!isLoading &&
                     <>
                         <div role="tablist" className=" w-3/5 mx-auto tabs tabs-boxed">
-                            <a role="tab" className={tab == 0 ? "tab tab-active" : "tab"} onClick={(e) => setTab(0)}>online</a>
-                            <a role="tab" className={tab == 1 ? "tab tab-active" : "tab"} onClick={(e) => setTab(1)}>normal</a>
-                            <a role="tab" className={tab == 2 ? "tab tab-active" : "tab"} onClick={(e) => setTab(2)}>endless</a>
+                            <a role="tab" className={tab == 1 ? "tab tab-active" : "tab"} onClick={(e) => {
+                                setTab(1)
+                            }}>normal</a>
+                            <a role="tab" className={tab == 2 ? "tab tab-active" : "tab"} onClick={(e) => {
+                                setTab(2)
+                            }}>endless</a>
                         </div>
                         <table className=" w-3/5 mx-auto p-16 bg-secondary text-center mt-3">
                             <tr className=" font-extrabold text-lg bg-accent rounded-lg">
@@ -41,14 +60,25 @@ export default function Normal(){
                                 <td>Username</td>
                                 <td>Score</td>
                             </tr>
-                            {data && data.map((item, index) => (
+                            {(dataNormal && tab == 1) && dataNormal.map((item, index) => (
                                 <tr key={index}>
                                     <td>
                                         {index <= 2 && <img src={index == 0 ? "/images/first_medal.svg" : index == 1 ? "/images/second_medal.svg" : index == 2 ? "/images/third_medal.svg" : ""} width={30} className="mx-auto" />}
                                     </td>
                                     <td>{index + 1}</td>
                                     <td>{item.username}</td>
-                                    <td>{item.score}</td>
+                                    <td>{item.score_normal}</td>
+                                </tr>
+                            ))}
+
+                            {(dataEndless && tab == 2) && dataEndless.map((item, index) => (
+                                <tr key={index}>
+                                    <td>
+                                        {index <= 2 && <img src={index == 0 ? "/images/first_medal.svg" : index == 1 ? "/images/second_medal.svg" : index == 2 ? "/images/third_medal.svg" : ""} width={30} className="mx-auto" />}
+                                    </td>
+                                    <td>{index + 1}</td>
+                                    <td>{item.username}</td>
+                                    <td>{item.score_endless}</td>
                                 </tr>
                             ))}
                         </table>

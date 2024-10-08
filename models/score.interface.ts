@@ -1,4 +1,9 @@
+interface UserData{
+    username: string,
+    score: number
+}
+
 export default interface ScoreInterface{
-    username: string;
-    score: number;
+    normal: UserData[];
+    endless: UserData[]
 }
